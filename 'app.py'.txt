@@ -1,0 +1,40 @@
+import streamlit as st
+import pandas as pd
+from sklearn.ensemble import RandomForestRegressor
+
+# Load data
+def load_data(filepath):
+    data = pd.read_csv(filepath)
+    data = pd.get_dummies(data, columns=['sex', 'region', 'smoker'], drop_first=True)
+    return data
+
+# Train model
+def train_model(data):
+    X = data.drop('charges', axis=1)
+    y = data['charges']
+    model = RandomForestRegressor(n_estimators=100, random_state=42)
+    model.fit(X, y)
+    return model
+
+# Define prediction function
+def predict(age, bmi, children, sex_male, smoker_yes, region_northwest, region_southeast, region_southwest):
+    features = pd.DataFrame([[age, bmi, children, sex_male, smoker_yes, region_northwest, region_southeast, region_southwest]],
+                            columns=['age', 'bmi', 'children', 'sex_male', 'smoker_yes', 'region_northwest', 'region_southeast', 'region_southwest'])
+    prediction = model.predict(features)[0]
+    return f'Estimated Insurance Charges: ${prediction:.2f}'
+
+# Streamlit app
+st.title('Insurance Charge Prediction')
+
+age = st.slider('Age', 18, 64, 30)
+bmi = st.slider('BMI', 15.0, 53.0, 30.0)
+children = st.slider('Children', 0, 5, 1)
+sex_male = st.checkbox('Male')
+smoker_yes = st.checkbox('Smoker')
+region_northwest = st.checkbox('Northwest')
+region_southeast = st.checkbox('Southeast')
+region_southwest = st.checkbox('Southwest')
+
+if st.button('Predict'):
+    prediction = predict(age, bmi, children, sex_male, smoker_yes, region_northwest, region_southeast, region_southwest)
+    st.write(prediction)
